@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <Toolbar
+        style="?android:actionBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:title="@string/app_name"
+        android:id="@+id/toolbar"
+        tools:ignore="InvalidId" />
+
+    <fragment
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id ="@+id/fragment"
+        android:name="com.shadedgames.ronmattss.sampletask.fragment.TaskListFragment"/>
+
+
+
+
+</LinearLayout>
