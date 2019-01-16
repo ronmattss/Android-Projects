@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+android:id="@+id/item_list"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:layout_below="@+id/add_task"
+android:layout_marginStart="@dimen/gutter"
+android:layout_marginLeft="@dimen/gutter"
+android:layout_marginTop="10dp"
+android:layout_marginEnd="@dimen/gutter"
+android:layout_marginRight="@dimen/gutter"
+android:layout_marginBottom="10dp">
+
+</ListView>
+

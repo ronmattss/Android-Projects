@@ -44,7 +44,7 @@ public class OnAlarmReceiver extends BroadcastReceiver {
                 .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
 
         //Send the Notification.
-        mgr.notify((int)taskId,note.build());
+        mgr.notify((int)0,note.build());
 
         }
 

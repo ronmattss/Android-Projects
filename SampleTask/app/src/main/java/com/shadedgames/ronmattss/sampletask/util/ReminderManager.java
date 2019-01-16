@@ -20,7 +20,7 @@ public class ReminderManager {
         i.putExtra(TaskProvider.COLUMN_TASKID,taskId);
         i.putExtra(TaskProvider.COLUMN_TITLE,title);
 
-        PendingIntent pi = PendingIntent.getBroadcast(context,0,i,PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent pi = PendingIntent.getBroadcast(context,(int)taskId,i,PendingIntent.FLAG_ONE_SHOT);
         alarmManager.setExact(AlarmManager.RTC_WAKEUP,when.getTimeInMillis(),pi);
 
     }

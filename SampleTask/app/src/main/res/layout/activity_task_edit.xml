@@ -7,9 +7,10 @@
                   android:layout_height="match_parent"
                   android:id="@+id/container"/>
               <Toolbar
+                  style="?android:actionBarStyle"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  android:layout_marginTop="@dimen/status_bar_height"
+                  android:layout_marginTop="0dp"
                   android:layout_gravity="top"
                   android:id="@+id/toolbar"/>
 </FrameLayout>

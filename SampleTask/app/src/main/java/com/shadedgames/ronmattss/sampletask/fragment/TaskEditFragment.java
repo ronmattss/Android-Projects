@@ -1,6 +1,5 @@
 package com.shadedgames.ronmattss.sampletask.fragment;
 
-import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -12,61 +11,79 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.graphics.Palette;
+import android.support.annotation.RequiresApi;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.shadedgames.ronmattss.sampletask.R;
 import com.shadedgames.ronmattss.sampletask.interfaces.OnEditFinished;
+import com.shadedgames.ronmattss.sampletask.provider.DatabaseHelper;
 import com.shadedgames.ronmattss.sampletask.provider.TaskProvider;
 import com.shadedgames.ronmattss.sampletask.util.ReminderManager;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-import static android.support.v7.graphics.Palette.generate;
+import static com.shadedgames.ronmattss.sampletask.R.layout.fragment_task_edit;
 
-public class TaskEditFragment extends Fragment implements 
+@RequiresApi(api = Build.VERSION_CODES.M)
+public class TaskEditFragment extends Fragment implements
         DatePickerDialog.OnDateSetListener,
         TimePickerDialog.OnTimeSetListener,
-        LoaderManager.LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor>,CustomDialogFragment.OnInputSelected {
 
     public static final String DEFAULT_FRAGMENT_TAG = "taskEditFragment";
     private static final int MENU_SAVE = 1;
     static final String TASK_ID = "taskId";
     static final String TASK_DATE_AND_TIME = "taskDateAndTime";
 
+
+  /*  TaskProvider dab = new TaskProvider();
+    TaskProvider.DatabaseHelper dbo = new TaskProvider.DatabaseHelper(getContext());*/
+
     // Views
     View rootView;
     EditText titleText;
     EditText notesText;
-    ImageView imageView;
+   // ImageView imageView;
     TextView dateButton;
     TextView timeButton;
+    Button addTaskButton;
+    ListView listView;
     long taskId;
     Calendar taskDateAndTime;
+    //DatabaseHelper
+    DatabaseHelper mDatabaseHelper;
+
+    // try list items
+    String[] mobileArray = {"Android","IPhone","WindowsMobile","Blackberry",
+            "WebOS","Ubuntu","Windows7","Max OS X","Wierd","Wierd","Wierd","Wierd","Wierd","Wierd","Wierd","Wierd",};
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
+
+
         super.onCreate(savedInstanceState);
+
         if(taskDateAndTime == null)
         {
             taskDateAndTime = Calendar.getInstance();
@@ -105,17 +122,35 @@ public class TaskEditFragment extends Fragment implements
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
-    public android.view.View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_task_edit,container,false);
+    public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
+        View v = inflater.inflate(fragment_task_edit,container,false);
 
+        ArrayAdapter adapter;
         rootView = v.getRootView();
         titleText = (EditText) v.findViewById(R.id.title);
         notesText = (EditText) v.findViewById(R.id.notes);
-        imageView = (ImageView) v.findViewById(R.id.image);
+        //imageView = (ImageView) v.findViewById(R.id.image);
         dateButton = (TextView) v.findViewById(R.id.task_date);
         timeButton = (TextView) v.findViewById(R.id.task_time);
-        
+        addTaskButton = (Button) v.findViewById(R.id.add_task);
+        listView = (ListView) v.findViewById(R.id.item_list);
+        mDatabaseHelper = new DatabaseHelper(getContext());
+        populateListView();
+
+
+
+
+        addTaskButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CustomDialogFragment dialog = new CustomDialogFragment();
+                dialog.setTargetFragment(TaskEditFragment.this, 1);
+                dialog.show(getFragmentManager(),"TodoDialog");
+
+            }
+        });
 
         //Tell the date and time buttons what to do when we click on them
         dateButton.setOnClickListener( new View.OnClickListener()
@@ -156,8 +191,8 @@ public class TaskEditFragment extends Fragment implements
         } else {
             // Load from background from database
             getLoaderManager().initLoader(0,null,this);
-        }      
-      
+        }
+
         return v;
 
 
@@ -307,7 +342,7 @@ public class TaskEditFragment extends Fragment implements
         Date date = new Date(dateInMillis);
         taskDateAndTime.setTime(date);
 
-        Picasso.get().load(TaskProvider.getImageUrlForTask(taskId)).into(imageView, new Callback() {
+      /*  Picasso.get().load(TaskProvider.getImageUrlForTask(taskId)).into(imageView, new Callback() {
             @Override
             public void onSuccess() {
                 Activity activity = getActivity();
@@ -329,13 +364,136 @@ public class TaskEditFragment extends Fragment implements
             public void onError(Exception e) {
             // sup
             }
-        });
+        });*/
         updateDateAndTimeButtons();
 
+    }
+
+
+  /*  @RequiresApi(api = Build.VERSION_CODES.M)
+    public void AddData(String newEntry) {
+        boolean insertData = mDatabaseHelper.addData(newEntry);
+        mDatabaseHelper.addData(newEntry);
+
+        if(insertData)
+            Toast.makeText(getContext(), "Saved to database", Toast.LENGTH_SHORT).show();
+        else
+            Toast.makeText(getContext(), "Error", Toast.LENGTH_SHORT).show();
+
+
+    }*/
+
+   /* @RequiresApi(api = Build.VERSION_CODES.M)
+    private void showList()
+    {
+        Cursor data = mDatabaseHelper.getData();
+        ArrayList<String> listData  = new ArrayList<>();
+
+    }*/
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void onAttach()
+    {
+    }
+
+    @Override
+    public void sendInput(String input) {
+        String todoPlaceholder = input;
+        addData(todoPlaceholder);
+        populateListView();
+        //Toast.makeText(getContext(), input, Toast.LENGTH_SHORT).show();
+       // listView.setAdapter(new ArrayAdapter<String>(getContext(),R.layout.list_layout,mobileArray));
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         // nothing to reset
     }
+    public void addData (String newEntry)
+    {
+        boolean insertData = mDatabaseHelper.addData(newEntry);
+        if(insertData)
+        {
+            Toast.makeText(getContext(), "Data Inserted", Toast.LENGTH_SHORT).show();
+        }
+        else
+            Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
+    }
+    public void populateListView()
+    {
+        Cursor data = mDatabaseHelper.getData();
+        ArrayList<String> listData = new ArrayList<>();
+        while(data.moveToNext()){
+            //get the value from the database in column 1
+            //then add it to the ArrayList
+            listData.add(data.getString(1));
+        }
+        listView.setAdapter(new ArrayAdapter<>(getContext(),R.layout.list_layout,listData));
+
+        //set an onItemClickLister, make it long
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
+                String name = adapterView.getItemAtPosition(position).toString();
+
+                Cursor data = mDatabaseHelper.getItemID(name); //get the id associated with that name
+                int itemID = -1;
+                while (data.moveToNext())
+                {
+                    itemID = data.getInt(0);
+                }
+                if(itemID > -1)
+                {
+                newInstanceDialog(itemID,name);
+
+                }
+
+
+                Toast.makeText(getContext(), itemID +" " + name, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+
+
+
+    }
+    public static CustomEditDialogFragment newInstanceDialog(int ID,String name)
+    {
+        CustomEditDialogFragment fragment = new CustomEditDialogFragment();
+        Bundle editName = new Bundle();
+        editName.putInt("id",ID);
+        editName.putString("name",name);
+        fragment.setArguments(editName);
+        return fragment;
+
+    }
+
+
+   /* @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void sendInput(String input) {
+        //mInputDisplay.setText(input);
+        // This is where we add to do in the list
+        // id should also be same as the above taskid?
+       // AddData(input);
+        dbo.addDataToTodo(input);
+        showList();
+
+
+
+
+    }*/
+
+    /*private void showList() {
+        Cursor data = dbo.getData();
+        ArrayList<String> listData = new ArrayList<>();
+        while (data.moveToNext())
+        {
+            listData.add(data.getString(1));
+        }
+        listView.setAdapter(new ArrayAdapter<>(getContext(),R.layout.list_layout,listData));
+    }*/
+
+
 }
