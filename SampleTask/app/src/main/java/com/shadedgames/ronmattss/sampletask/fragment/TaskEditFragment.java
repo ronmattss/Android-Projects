@@ -49,7 +49,7 @@ import static com.shadedgames.ronmattss.sampletask.R.layout.fragment_task_edit;
 public class TaskEditFragment extends Fragment implements
         DatePickerDialog.OnDateSetListener,
         TimePickerDialog.OnTimeSetListener,
-        LoaderManager.LoaderCallbacks<Cursor>,CustomDialogFragment.OnInputSelected {
+        LoaderManager.LoaderCallbacks<Cursor>,CustomDialogFragment.OnInputSelected,CustomEditDialogFragment.onEditTitle {
 
     public static final String DEFAULT_FRAGMENT_TAG = "taskEditFragment";
     private static final int MENU_SAVE = 1;
@@ -166,6 +166,34 @@ public class TaskEditFragment extends Fragment implements
             @Override
             public void onClick(View v) {
                 showTimePicker();
+            }
+        });
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
+                populateListView();
+                String name = adapterView.getItemAtPosition(position).toString();
+                CustomEditDialogFragment dialog = new CustomEditDialogFragment();
+                Bundle bundle = new Bundle();
+                Cursor data = mDatabaseHelper.getItemID(name); //get the id associated with that name
+                int itemID = -1;
+                while (data.moveToNext())
+                {
+                    itemID = data.getInt(0);
+                }
+                if(itemID > -1)
+                {
+                    bundle.putInt("todoId",itemID);
+                    bundle.putString("todoTitle",name);
+                }
+
+
+                dialog.setArguments(bundle);
+                dialog.setTargetFragment(TaskEditFragment.this,1);
+                dialog.show(getFragmentManager(),"TodoEditDialog");
+                // Toast.makeText(getContext(), itemID +" " + name, Toast.LENGTH_SHORT).show();
+
+                return true;
             }
         });
         if(taskId == 0)
@@ -391,6 +419,12 @@ public class TaskEditFragment extends Fragment implements
 
     }*/
 
+    @Override
+    public void sendUpdateData(String newTodoTitle, int todoID, String oldTodoTitle) {
+        updateData(newTodoTitle, todoID, oldTodoTitle);
+        populateListView();
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onAttach()
@@ -409,6 +443,11 @@ public class TaskEditFragment extends Fragment implements
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         // nothing to reset
+    }
+    public void updateData (String _new, int id, String old)
+    {
+            mDatabaseHelper.updateName(_new,id,old);
+            Toast.makeText(getContext(), "Todo Updated", Toast.LENGTH_SHORT).show();
     }
     public void addData (String newEntry)
     {
@@ -429,45 +468,12 @@ public class TaskEditFragment extends Fragment implements
             //then add it to the ArrayList
             listData.add(data.getString(1));
         }
+        //Show todo
         listView.setAdapter(new ArrayAdapter<>(getContext(),R.layout.list_layout,listData));
-
-        //set an onItemClickLister, make it long
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
-                String name = adapterView.getItemAtPosition(position).toString();
-
-                Cursor data = mDatabaseHelper.getItemID(name); //get the id associated with that name
-                int itemID = -1;
-                while (data.moveToNext())
-                {
-                    itemID = data.getInt(0);
-                }
-                if(itemID > -1)
-                {
-                newInstanceDialog(itemID,name);
-
-                }
-
-
-                Toast.makeText(getContext(), itemID +" " + name, Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
-
-
-
     }
-    public static CustomEditDialogFragment newInstanceDialog(int ID,String name)
-    {
-        CustomEditDialogFragment fragment = new CustomEditDialogFragment();
-        Bundle editName = new Bundle();
-        editName.putInt("id",ID);
-        editName.putString("name",name);
-        fragment.setArguments(editName);
-        return fragment;
 
-    }
+
+
 
 
    /* @RequiresApi(api = Build.VERSION_CODES.M)
